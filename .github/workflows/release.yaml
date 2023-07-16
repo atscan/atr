@@ -27,8 +27,6 @@ jobs:
           github_token: ${{ secrets.PAT }}
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
-          project_path: "./cmd"
           ldflags: "-X main._version=${{ github.event.release.tag_name }}"
-          binary_name: atr
           sha256sum: true
           md5sum: false
