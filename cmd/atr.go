@@ -19,7 +19,6 @@ import (
 	"github.com/alecthomas/chroma/lexers"
 	"github.com/alecthomas/chroma/styles"
 	repo "github.com/atscan/atr/repo"
-	"github.com/atscan/atr/util/version"
 	"github.com/dustin/go-humanize"
 	"github.com/fatih/color"
 	"github.com/ipfs/go-cid"
@@ -29,12 +28,14 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+var _version string
+
 func main() {
 
 	app := &cli.App{
 		Name:    "atr",
 		Usage:   "AT Protocol IPLD-CAR Repository toolkit",
-		Version: version.Version,
+		Version: _version,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:  "C",

@@ -4,14 +4,8 @@ import (
 	"runtime/debug"
 )
 
-// Version holds the version number.
-var Version string
-
-func init() {
-	if Version == "" {
-		Version = "dev-" + revision()
-	}
-}
+// v holds the version number.
+var v string
 
 func revision() string {
 	info, ok := debug.ReadBuildInfo()
@@ -24,4 +18,14 @@ func revision() string {
 		}
 	}
 	return ""
+}
+
+func Version(version string) string {
+	if version != "" {
+		v = version
+	}
+	if v == "" {
+		v = "dev-" + revision()
+	}
+	return v
 }

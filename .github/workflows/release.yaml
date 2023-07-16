@@ -29,3 +29,5 @@ jobs:
           goarch: ${{ matrix.goarch }}
           project_path: "./cmd"
           binary_name: atr
+          sha256sum: true
+          md5sum: false
