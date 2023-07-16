@@ -5,6 +5,8 @@ go 1.20
 require (
 	github.com/alecthomas/chroma v0.10.0
 	github.com/bluesky-social/indigo v0.0.0-20230714174244-57d75d8cfc65
+	github.com/dustin/go-humanize v1.0.1
+	github.com/fatih/color v1.15.0
 	github.com/fxamacker/cbor/v2 v2.4.0
 	github.com/ipfs/go-cid v0.4.1
 	github.com/ipfs/go-datastore v0.6.0
@@ -39,6 +41,7 @@ require (
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/jbenet/goprocess v0.1.4 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect

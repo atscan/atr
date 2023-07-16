@@ -120,6 +120,10 @@ func OpenRepo(ctx context.Context, bs blockstore.Blockstore, root cid.Cid, fullR
 	}, nil
 }
 
+func (r *Repo) Head() cid.Cid {
+	return r.repoCid
+}
+
 func (r *Repo) getMst(ctx context.Context) (*mst.MerkleSearchTree, error) {
 	if r.mst != nil {
 		return r.mst, nil
@@ -159,18 +163,8 @@ func (r *Repo) GetRecord(ctx context.Context, rpath string) (cid.Cid, interface{
 	if err != nil {
 		return cid.Undef, nil, err
 	}
-
-	//fmt.Println(hex.EncodeToString(blk.RawData()))
-
 	var v interface{}
 	cbor2.Unmarshal(blk.RawData(), &v)
-
-	//fmt.Println(string(json))
-
-	/*rec, err := lexutil.CborDecodeValue(blk.RawData())
-	if err != nil {
-		return cid.Undef, nil, err
-	}*/
 
 	return cc, v, nil
 }
