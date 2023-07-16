@@ -23,6 +23,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/ipfs/go-cid"
 	"github.com/itchyny/gojq"
+	"github.com/jmespath/go-jmespath"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/klauspost/compress/zstd"
 	"github.com/urfave/cli/v2"
@@ -112,7 +113,13 @@ var ShowCommand = &cli.Command{
 		&cli.StringFlag{
 			Name:    "query",
 			Aliases: []string{"q"},
-			Usage:   "Query results (jq syntax)",
+			Usage:   "Query results (jq)",
+			Value:   "",
+		},
+		&cli.StringFlag{
+			Name:    "query-jmes",
+			Aliases: []string{"qq"},
+			Usage:   "Query results (jmespath)",
 			Value:   "",
 		},
 		&cli.BoolFlag{
@@ -133,6 +140,15 @@ var ShowCommand = &cli.Command{
 			} else {
 				query = tq
 			}
+		}
+		qq := ctx.String("query-jmes")
+		var queryJmes *jmespath.JMESPath
+		if qq != "" {
+			jc, err := jmespath.Compile(qq)
+			if err != nil {
+				return err
+			}
+			queryJmes = jc
 		}
 
 		eo, err := exec.Command("defaults", "read", "-g", "AppleInterfaceStyle").Output()
@@ -155,7 +171,7 @@ var ShowCommand = &cli.Command{
 					}
 				}
 				var out interface{}
-				if q != "" {
+				if q != "" || qq != "" {
 					json, err := jsoniter.Marshal(e.Body)
 					if err != nil {
 						log.Fatal("jsoniter error:", err)
@@ -167,20 +183,29 @@ var ShowCommand = &cli.Command{
 						log.Fatal("jsoniter error:", err)
 						continue
 					}
-					iter := query.Run(interface{}(pv))
-					for {
-						v, ok := iter.Next()
-						if !ok {
-							break
+					if q != "" {
+						iter := query.Run(interface{}(pv))
+						for {
+							v, ok := iter.Next()
+							if !ok {
+								break
+							}
+							if err, ok := v.(error); ok {
+								log.Fatalln("gojq iter error:", err)
+								continue
+							}
+							if v == nil {
+								continue
+							}
+							out = v
 						}
-						if err, ok := v.(error); ok {
-							log.Fatalln("gojq iter error:", err)
-							continue
+					}
+					if qq != "" {
+						r, err := queryJmes.Search(pv)
+						if err != nil {
+							log.Fatalln("jmespath error:", err)
 						}
-						if v == nil {
-							continue
-						}
-						out = v
+						out = r
 					}
 				} else {
 					out = e.Body
@@ -322,6 +347,10 @@ func print(v interface{}) error {
 	if err != nil {
 		log.Fatal(err)
 	}
+	s := string(json)
+	if s == "null" {
+		return nil
+	}
 	fmt.Println(string(json))
 	return nil
 }
@@ -331,8 +360,11 @@ func prettyPrint(v interface{}, hg func(io.Writer, string)) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	hg(os.Stdout, string(json))
-	fmt.Println("")
+	s := string(json)
+	if s == "null" {
+		return nil
+	}
+	hg(os.Stdout, s+"\n")
 	return nil
 }
 

@@ -10,9 +10,13 @@ help: ## Print info about all commands
 .PHONY: build
 build: ## Build all executables
 	go build ./cmd/atr.go
+b:
+	@make build
 
 install: ## Install all executables
 	go install -ldflags "-X main._version=`git tag --sort=-version:refname | head -n 1`" ./cmd/atr.go
+i:
+	@make install
 
 .PHONY: fmt
 fmt: ## Format all go files
