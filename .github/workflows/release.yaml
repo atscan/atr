@@ -22,13 +22,14 @@ jobs:
             goos: windows
     steps:
       - uses: actions/checkout@v3
+      - run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - uses: wangyoucao577/go-release-action@v1
         with:
           github_token: ${{ secrets.PAT }}
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
           project_path: "./cmd"
-          ldflags: "-X main._version=`git tag --sort=-version:refname | head -n 1`"
+          ldflags: "-X main._version=${{ env.RELEASE_VERSION }}"
           binary_name: atr
           sha256sum: true
           md5sum: false
