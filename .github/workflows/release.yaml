@@ -28,6 +28,7 @@ jobs:
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
           project_path: "./cmd"
+          ldflags: "-X main._version=`git tag --sort=-version:refname | head -n 1`"
           binary_name: atr
           sha256sum: true
           md5sum: false

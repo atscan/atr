@@ -12,7 +12,7 @@ build: ## Build all executables
 	go build ./cmd/atr.go
 
 install: ## Install all executables
-	go install ./cmd/atr.go
+	go install -ldflags "-X main._version=`git tag --sort=-version:refname | head -n 1`" ./cmd/atr.go
 
 .PHONY: fmt
 fmt: ## Format all go files
