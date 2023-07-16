@@ -36,7 +36,7 @@ var InspectCmd = &cobra.Command{
 			}
 			yellow := color.New(color.FgYellow).SprintFunc()
 			cyan := color.New(color.FgCyan).SprintFunc()
-			fmt.Printf("%v:\n  Head: %s\n  Size: %s  Commits: %v\n\n", yellow(ss.File), cyan(ss.Root.String()), cyan(humanize.Bytes(uint64(ss.Size))), cyan(humanize.Comma(int64(len(ss.Items)))))
+			fmt.Printf("%v:\n  Head: %s\n  Size: %s  Items: %v\n\n", yellow(ss.File), cyan(ss.Root.String()), cyan(humanize.Bytes(uint64(ss.Size))), cyan(humanize.Comma(int64(len(ss.Items)))))
 		}
 
 		stat, _ := os.Stdin.Stat()
