@@ -12,12 +12,14 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"syscall"
 
 	"github.com/alecthomas/chroma"
 	"github.com/alecthomas/chroma/formatters"
 	"github.com/alecthomas/chroma/lexers"
 	"github.com/alecthomas/chroma/styles"
 	repo "github.com/atscan/atr/repo"
+	"github.com/atscan/atr/util/version"
 	"github.com/dustin/go-humanize"
 	"github.com/fatih/color"
 	"github.com/ipfs/go-cid"
@@ -30,8 +32,9 @@ import (
 func main() {
 
 	app := &cli.App{
-		Name:  "atr",
-		Usage: "AT Protocol IPLD-CAR Repository toolkit",
+		Name:    "atr",
+		Usage:   "AT Protocol IPLD-CAR Repository toolkit",
+		Version: version.Version,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:  "C",
@@ -78,7 +81,7 @@ var InspectCommand = &cli.Command{
 			}
 			yellow := color.New(color.FgYellow).SprintFunc()
 			cyan := color.New(color.FgCyan).SprintFunc()
-			fmt.Printf("%v\n  Head: %s\n  Size: %s  Commits: %v\n\n", yellow(ss.File), cyan(ss.Root.String()), cyan(humanize.Bytes(uint64(ss.Size))), cyan(humanize.Comma(int64(len(ss.Items)))))
+			fmt.Printf("%v:\n  Head: %s\n  Size: %s  Commits: %v\n\n", yellow(ss.File), cyan(ss.Root.String()), cyan(humanize.Bytes(uint64(ss.Size))), cyan(humanize.Comma(int64(len(ss.Items)))))
 		}
 
 		stat, _ := os.Stdin.Stat()
@@ -203,6 +206,11 @@ var ShowCommand = &cli.Command{
 }
 
 func WalkFiles(ctx *cli.Context, cb func(RepoSnapshot, error)) error {
+	wd := ctx.String("C")
+	if wd != "." {
+		syscall.Chdir(wd)
+	}
+
 	dir := ctx.Args().First()
 	if dir == "" {
 		dir = "."
