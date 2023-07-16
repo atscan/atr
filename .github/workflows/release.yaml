@@ -27,4 +27,5 @@ jobs:
           github_token: ${{ secrets.PAT }}
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
-          project_path: "./cmd/atr.go"
+          project_path: "./cmd"
+          binary_name: atr
