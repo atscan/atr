@@ -9,7 +9,7 @@ help: ## Print info about all commands
 
 .PHONY: build
 build: ## Build all executables
-	go build -ldflags "-X main._version=v0.1.4" ./atr.go
+	go build -ldflags "-X main._version=`git tag --sort=-version:refname | head -n 1`" ./atr.go
 b:
 	@make build
 
