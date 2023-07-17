@@ -26,7 +26,7 @@ var InspectCmd = &cobra.Command{
 			WorkingDir: workingDir,
 			Args:       args,
 		}
-
+		fmt.Println("")
 		walk := func(ss repo.RepoSnapshot, err error) {
 			if ss.Root.String() == "b" {
 				return

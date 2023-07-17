@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/atscan/atr/cli"
@@ -64,13 +65,15 @@ var ShowCmd = &cobra.Command{
 			queryJmes = jc
 		}
 
-		eo, err := exec.Command("defaults", "read", "-g", "AppleInterfaceStyle").Output()
-		if err != nil {
-			log.Fatal(err)
-		}
 		style := "paraiso-dark"
-		if strings.Index(string(eo), "Dark") != 0 {
-			style = "paraiso-light"
+		if runtime.GOOS == "darwin" {
+			eo, err := exec.Command("defaults", "read", "-g", "AppleInterfaceStyle").Output()
+			if err != nil {
+				log.Fatal(err)
+			}
+			if strings.Index(string(eo), "Dark") != 0 {
+				style = "paraiso-light"
+			}
 		}
 		hg := cli.Highlight(style)
 
