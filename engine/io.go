@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/atscan/atr/repo"
-	"github.com/ipfs/go-cid"
 	"github.com/klauspost/compress/zstd"
 )
 
@@ -52,6 +51,17 @@ func LoadCompressed(fn string) (repo.RepoSnapshot, error) {
 }
 
 func LoadFromStream(input io.Reader) (repo.RepoSnapshot, error) {
+	ss, err := LoadRepoFromStream(input)
+	if err != nil {
+		return ss, err
+	}
+
+	ss.Root = ss.Repo.Head()
+
+	return ss, nil
+}
+
+func LoadRepoFromStream(input io.Reader) (repo.RepoSnapshot, error) {
 	rctx := context.TODO()
 	ss := repo.RepoSnapshot{}
 
@@ -66,18 +76,6 @@ func LoadFromStream(input io.Reader) (repo.RepoSnapshot, error) {
 	if err != nil {
 		return ss, err
 	}
-	ss.Root = r.Head()
-	var out []repo.RepoItem
-	if err := r.ForEach(rctx, "", func(k string, v cid.Cid) error {
-		_, rec, err := r.GetRecord(rctx, k)
-		if err != nil {
-			log.Println("Cannot get record:", v.String())
-		}
-		out = append(out, repo.RepoItem{Cid: v, Path: k, Body: rec})
-		ss.Items = out
-		return nil
-	}); err != nil {
-		return ss, err
-	}
+	ss.Repo = *r
 	return ss, nil
 }

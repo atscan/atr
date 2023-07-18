@@ -22,10 +22,14 @@ var (
 	QueryJmes string
 	Type      string
 	Raw       bool
+	Root      string
+	GoBack    int
 )
 
 func init() {
 	rootCmd.AddCommand(ShowCmd)
+	ShowCmd.Flags().StringVarP(&Root, "root", "r", "", "Use specific root")
+	ShowCmd.Flags().IntVarP(&GoBack, "back", "b", 0, "Go back (n) commits")
 	ShowCmd.Flags().StringVarP(&Type, "type", "t", "", "Filter by item type")
 	ShowCmd.Flags().StringVarP(&Query, "query", "q", "", "Query results (jq)")
 	ShowCmd.Flags().StringVarP(&QueryJmes, "query-jmes", "x", "", "Query results (jmespath)")
@@ -78,6 +82,13 @@ var ShowCmd = &cobra.Command{
 		hg := cli.Highlight(style)
 
 		walk := func(ss repo.RepoSnapshot, err error) {
+
+			rr := Root
+			if GoBack > 0 {
+				gb, _ := ss.Repo.GetCommitsPath(GoBack)
+				rr = gb[len(gb)-1].String()
+			}
+			ss.LoadItems(rr)
 
 			for _, e := range ss.Items {
 				tf := Type

@@ -9,9 +9,9 @@ import (
 
 	"github.com/bluesky-social/indigo/mst"
 	"github.com/bluesky-social/indigo/util"
+	blockstore "github.com/ipfs/boxo/blockstore"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
-	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	cbor "github.com/ipfs/go-ipld-cbor"
 	"github.com/ipld/go-car/v2"
 )
@@ -35,6 +35,8 @@ type UnsignedCommit struct {
 }
 
 type Repo struct {
+	Blocks int
+
 	sc  SignedCommit
 	cst cbor.IpldStore
 	bs  blockstore.Blockstore
@@ -67,40 +69,42 @@ func (sc *SignedCommit) Unsigned() *UnsignedCommit {
 	return buf.Bytes(), nil
 }*/
 
-func IngestRepo(ctx context.Context, bs blockstore.Blockstore, r io.Reader) (cid.Cid, error) {
+func IngestRepo(ctx context.Context, bs blockstore.Blockstore, r io.Reader) (cid.Cid, int, error) {
 	br, err := car.NewBlockReader(r)
 	if err != nil {
-		return cid.Undef, err
+		return cid.Undef, 0, err
 	}
 
+	size := 0
 	for {
 		blk, err := br.Next()
 		if err != nil {
 			if err == io.EOF {
 				break
 			}
-			return cid.Undef, err
+			return cid.Undef, size, err
 		}
 
 		if err := bs.Put(ctx, blk); err != nil {
-			return cid.Undef, err
+			return cid.Undef, size, err
 		}
+		size++
 	}
 
-	return br.Roots[0], nil
+	return br.Roots[0], size, nil
 }
 
 func ReadRepoFromCar(ctx context.Context, r io.Reader) (*Repo, error) {
 	bs := blockstore.NewBlockstore(datastore.NewMapDatastore())
-	root, err := IngestRepo(ctx, bs, r)
+	root, size, err := IngestRepo(ctx, bs, r)
 	if err != nil {
 		return nil, err
 	}
 
-	return OpenRepo(ctx, bs, root, false)
+	return OpenRepo(ctx, bs, root, size)
 }
 
-func OpenRepo(ctx context.Context, bs blockstore.Blockstore, root cid.Cid, fullRepo bool) (*Repo, error) {
+func OpenRepo(ctx context.Context, bs blockstore.Blockstore, root cid.Cid, size int) (*Repo, error) {
 	cst := util.CborStore(bs)
 
 	var sc SignedCommit
@@ -117,11 +121,51 @@ func OpenRepo(ctx context.Context, bs blockstore.Blockstore, root cid.Cid, fullR
 		bs:      bs,
 		cst:     cst,
 		repoCid: root,
+		Blocks:  size,
 	}, nil
+}
+
+func (r *Repo) GetCommitsPath(len int) ([]cid.Cid, error) {
+	path := []cid.Cid{}
+	path = append(path, r.repoCid)
+	if r.sc.Prev != nil {
+		getParentCommits(r, *r.sc.Prev, &path, len-1)
+	}
+	return path, nil
+}
+
+func getParentCommits(r *Repo, c cid.Cid, p *[]cid.Cid, len int) ([]cid.Cid, error) {
+	var sc SignedCommit
+	ctx := context.TODO()
+	if err := r.cst.Get(ctx, c, &sc); err != nil {
+		return nil, fmt.Errorf("loading root from blockstore: %w", err)
+	}
+	*p = append(*p, c)
+	if len == 0 {
+		return nil, nil
+	} else {
+		len--
+	}
+	if sc.Prev != nil {
+		return getParentCommits(r, *sc.Prev, p, len)
+	}
+	return nil, nil
 }
 
 func (r *Repo) Head() cid.Cid {
 	return r.repoCid
+}
+
+func (r *Repo) SignedCommit() SignedCommit {
+	return r.sc
+}
+
+func (r *Repo) MerkleSearchTree() *mst.MerkleSearchTree {
+	return r.mst
+}
+
+func (r *Repo) BlockStore() blockstore.Blockstore {
+	return r.bs
 }
 
 func (r *Repo) getMst(ctx context.Context) (*mst.MerkleSearchTree, error) {
@@ -134,10 +178,15 @@ func (r *Repo) getMst(ctx context.Context) (*mst.MerkleSearchTree, error) {
 	return t, nil
 }
 
+func (r *Repo) MST() *mst.MerkleSearchTree {
+	mst, _ := r.getMst(context.TODO())
+	return mst
+}
+
 var ErrDoneIterating = fmt.Errorf("done iterating")
 
 func (r *Repo) ForEach(ctx context.Context, prefix string, cb func(k string, v cid.Cid) error) error {
-	t := mst.LoadMST(r.cst, r.sc.Data)
+	t, _ := r.getMst(ctx)
 
 	if err := t.WalkLeavesFrom(ctx, prefix, cb); err != nil {
 		if err != ErrDoneIterating {
@@ -148,7 +197,7 @@ func (r *Repo) ForEach(ctx context.Context, prefix string, cb func(k string, v c
 	return nil
 }
 
-func (r *Repo) GetRecord(ctx context.Context, rpath string) (cid.Cid, interface{}, error) {
+func (r *Repo) GetRecord(ctx context.Context, rpath string) (cid.Cid, map[string]interface{}, error) {
 	mst, err := r.getMst(ctx)
 	if err != nil {
 		return cid.Undef, nil, fmt.Errorf("getting repo mst: %w", err)
@@ -163,7 +212,7 @@ func (r *Repo) GetRecord(ctx context.Context, rpath string) (cid.Cid, interface{
 	if err != nil {
 		return cid.Undef, nil, err
 	}
-	var v interface{}
+	var v map[string]interface{}
 	cbor2.Unmarshal(blk.RawData(), &v)
 
 	return cc, v, nil
