@@ -45,6 +45,7 @@ var ShowCmd = &cobra.Command{
 		ctx := cli.Context{
 			WorkingDir: workingDir,
 			Args:       args,
+			Raw:        Raw,
 		}
 
 		//q := ctx.Args().First()
@@ -87,6 +88,7 @@ var ShowCmd = &cobra.Command{
 			if GoBack > 0 {
 				gb, _ := ss.Repo.GetCommitsPath(GoBack)
 				rr = gb[len(gb)-1].String()
+
 			}
 			ss.LoadItems(rr)
 

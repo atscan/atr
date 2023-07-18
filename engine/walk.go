@@ -31,7 +31,7 @@ func WalkFiles(ctx *cli.Context, cb func(repo.RepoSnapshot, error)) error {
 		return err
 	}
 	if !info.IsDir() {
-		cb(Load(dir))
+		cb(Load(ctx, dir))
 		return nil
 	}
 	err = filepath.Walk(dir,
@@ -39,7 +39,7 @@ func WalkFiles(ctx *cli.Context, cb func(repo.RepoSnapshot, error)) error {
 			if err != nil {
 				return err
 			}
-			cb(Load(fn))
+			cb(Load(ctx, fn))
 			return nil
 		})
 	if err != nil {
@@ -49,7 +49,7 @@ func WalkFiles(ctx *cli.Context, cb func(repo.RepoSnapshot, error)) error {
 }
 
 func WalkStream(ctx *cli.Context, input io.Reader, cb func(repo.RepoSnapshot, error)) error {
-	ss, err := LoadFromStream(input)
+	ss, err := LoadFromStream(ctx, input, -1)
 	if err != nil {
 		log.Println("Cannot load from stream:", err)
 		return nil

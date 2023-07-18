@@ -29,6 +29,7 @@ var LogCmd = &cobra.Command{
 		ctx := cli.Context{
 			WorkingDir: workingDir,
 			Args:       args,
+			Raw:        Raw,
 		}
 		walk := func(ss repo.RepoSnapshot, err error) {
 			if ss.Root.String() == "b" {
@@ -44,20 +45,18 @@ var LogCmd = &cobra.Command{
 			} else {
 				yellow := color.New(color.FgYellow).SprintFunc()
 				cyan := color.New(color.FgCyan).SprintFunc()
-				green := color.New(color.FgGreen).SprintFunc()
 
 				fmt.Printf("[%v]\n", yellow(ss.File))
 				for i, cid := range cp {
-					stats, _ := ss.GetCollectionStats(cid.String())
+					/*stats, _ := ss.GetCollectionStats(cid.String())
 
 					sum := 0
 					for _, v := range stats {
 						sum += v
-					}
-					fmt.Printf("%v [#%v] %v objects\n", cyan(cid.String()), len(cp)-i, green(sum))
+					}*/
+					fmt.Printf("%v [#%v]\n", cyan(cid.String()), len(cp)-i)
 				}
 			}
-			//fmt.Printf("\n")
 		}
 
 		stat, _ := os.Stdin.Stat()
