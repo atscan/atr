@@ -22,13 +22,16 @@ atr show my-repo.car
 atr show -t post
 
 # use jq query language
-atr show -q .displayName
+atr show -q .body.displayName
+
+# use jmespath query language
+atr show -q body.displayName
 
 # Search with grep:
 atr show -t post | grep love
 
 # Repositories can also be read via pipe:
-curl -sL "https://xrpc.link/r/atproto.com" | atr show
+curl -sL "xrpc.link/r/atproto.com" | atr show
 
 # FYI xrpc.link is shortcut domain which redirecting to
 # relevant /xrpc/... endpoints
