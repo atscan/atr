@@ -99,9 +99,11 @@ var ShowCmd = &cobra.Command{
 						continue
 					}
 				}
-				var out interface{}
+
+				out := cli.ObjectOutput{Did: ss.Repo.SignedCommit().Did, Cid: e.Cid.String(), Rkey: e.Path, Body: e.Body}
+
 				if q != "" || qq != "" {
-					json, err := jsoniter.Marshal(e.Body)
+					json, err := jsoniter.Marshal(out)
 					if err != nil {
 						log.Fatal("jsoniter error:", err)
 						continue
@@ -126,7 +128,7 @@ var ShowCmd = &cobra.Command{
 							if v == nil {
 								continue
 							}
-							out = v
+							out.Match = v
 						}
 					}
 					if qq != "" {
@@ -134,16 +136,22 @@ var ShowCmd = &cobra.Command{
 						if err != nil {
 							log.Fatalln("jmespath error:", err)
 						}
-						out = r
+						out.Match = r
 					}
-				} else {
-					out = e.Body
 				}
+
+				var ro interface{}
+				if out.Match != nil {
+					ro = out.Match
+				} else {
+					ro = out
+				}
+
 				stat, _ := os.Stdout.Stat()
 				if !Raw && (stat.Mode()&os.ModeCharDevice) != 0 {
-					cli.PrettyPrint(out, hg)
+					cli.PrettyPrint(ro, e, ss, hg)
 				} else {
-					cli.Print(out)
+					cli.Print(ro, e, ss)
 				}
 			}
 		}
