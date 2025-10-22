@@ -17,7 +17,7 @@ import (
 )
 
 // current version of repo currently implemented
-const ATP_REPO_VERSION int64 = 2
+const ATP_REPO_VERSION int64 = 3
 
 type SignedCommit struct {
 	Did     string   `cborgen:"did"`
@@ -112,7 +112,7 @@ func OpenRepo(ctx context.Context, bs blockstore.Blockstore, root cid.Cid, size 
 		return nil, fmt.Errorf("loading root from blockstore: %w", err)
 	}
 
-	if sc.Version != ATP_REPO_VERSION {
+	if sc.Version > ATP_REPO_VERSION {
 		return nil, fmt.Errorf("unsupported repo version: %d", sc.Version)
 	}
 
