@@ -38,6 +38,39 @@ curl -sL "xrpc.link/r/atproto.com" | atr show
 # relevant /xrpc/... endpoints
 ```
 
+Example output:
+```bash
+~> curl -sL "https://enoki.us-east.host.bsky.network/xrpc/com.atproto.sync.getRepo?did=did:plc:ewvi7nxzyoun6zhxrhs64oiz" | atr i
+
+(pipe):
+  DID: did:plc:ewvi7nxzyoun6zhxrhs64oiz  Repo Version: 3
+  Head: bafyreiapeyhetsiuz6jcybcmgxw7k45imuu22shmbhybccq4vef57fc4mi
+  Sig: d03ed428c77a9e4964560f575426f81ed694861c93372b866d77b3b1f814a39b4d27033fa86593e194dfe07278a96aa1a9b76f1b2f7ff8d4313130b557177fb1
+  Size: 566 kB  Blocks: 1,837  Commits: 1  Objects: 1,434
+  Profile:
+    Display Name: AT Protocol Developers
+    Description: Social networking technology created by Bluesky.
+
+      Developer-focused account. Follow @bsky.app for general announcements!
+
+      Bluesky API docs: docs.bsky.app
+      AT Protocol specs: atproto.com
+  Collections:
+    app.bsky.actor.profile: 1
+    app.bsky.feed.generator: 2
+    app.bsky.feed.like: 686
+    app.bsky.feed.post: 150
+    app.bsky.feed.repost: 541
+    app.bsky.feed.threadgate: 1
+    app.bsky.graph.follow: 21
+    app.bsky.graph.list: 1
+    app.bsky.graph.listitem: 29
+    app.bsky.graph.starterpack: 1
+    chat.bsky.actor.declaration: 1
+  Last 5 commits:
+    bafyreiapeyhetsiuz6jcybcmgxw7k45imuu22shmbhybccq4vef57fc4mi
+```
+
 ## License
 
 MIT
