@@ -31,6 +31,7 @@ atr show -q body.displayName
 atr show -t post | grep love
 
 # Repositories can also be read via pipe:
+curl -sL "https://enoki.us-east.host.bsky.network/xrpc/com.atproto.sync.getRepo?did=did:plc:ewvi7nxzyoun6zhxrhs64oiz" | atr show
 curl -sL "xrpc.link/r/atproto.com" | atr show
 
 # FYI xrpc.link is shortcut domain which redirecting to
